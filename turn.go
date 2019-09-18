@@ -30,7 +30,7 @@ func authenticateRequest(curriedSend curriedSend, m *stun.Message, callingMethod
 		return stun.MessageIntegrity{}, "", err
 	}
 
-	if !m.Contains(stun.AttrMessageIntegrity) {
+	handleNoAuth := func() (stun.MessageIntegrity, string, error){
 		nonce, err := buildNonce()
 		if err != nil {
 			return stun.MessageIntegrity{}, "", err
@@ -41,7 +41,10 @@ func authenticateRequest(curriedSend curriedSend, m *stun.Message, callingMethod
 			stun.NewNonce(nonce),
 			stun.NewRealm(realm),
 		)
+	}
 
+	if !m.Contains(stun.AttrMessageIntegrity) {
+		return handleNoAuth()
 	}
 
 	var ourKey [16]byte
@@ -69,7 +72,7 @@ func authenticateRequest(curriedSend curriedSend, m *stun.Message, callingMethod
 	/* #nosec */
 	ourKey = md5.Sum([]byte(usernameAttr.String() + ":" + realmAttr.String() + ":" + password))
 	if err := assertMessageIntegrity(m, ourKey[:]); err != nil {
-		return handleErr(err)
+		return handleNoAuth()
 	}
 
 	return stun.NewLongTermIntegrity(usernameAttr.String(), realmAttr.String(), password), usernameAttr.String(), nil
