@@ -23,7 +23,7 @@ type curriedSend func(class stun.MessageClass, method stun.Method, transactionID
 func authenticateRequest(curriedSend curriedSend, m *stun.Message, callingMethod stun.Method, realm string, authHandler AuthHandler, srcAddr net.Addr) (stun.MessageIntegrity, string, error) {
 	handleErr := func(err error) (stun.MessageIntegrity, string, error) {
 		if sendErr := curriedSend(stun.ClassErrorResponse, callingMethod, m.TransactionID,
-			&stun.ErrorCodeAttribute{Code: stun.CodeBadRequest},
+			stun.CodeBadRequest,
 		); sendErr != nil {
 			err = errors.Errorf(strings.Join([]string{sendErr.Error(), err.Error()}, "\n"))
 		}
@@ -37,7 +37,7 @@ func authenticateRequest(curriedSend curriedSend, m *stun.Message, callingMethod
 		}
 
 		return nil, "", curriedSend(stun.ClassErrorResponse, callingMethod, m.TransactionID,
-			&stun.ErrorCodeAttribute{Code: stun.CodeUnauthorized},
+			stun.CodeUnauthorized,
 			stun.NewNonce(nonce),
 			stun.NewRealm(realm),
 		)
@@ -82,7 +82,7 @@ func assertDontFragment(curriedSend curriedSend, m *stun.Message, attr stun.Sett
 	if m.Contains(stun.AttrDontFragment) {
 		err := errors.Errorf("no support for DONT-FRAGMENT")
 		if sendErr := curriedSend(stun.ClassErrorResponse, stun.MethodAllocate, m.TransactionID,
-			&stun.ErrorCodeAttribute{Code: stun.CodeUnknownAttribute},
+			stun.CodeUnknownAttribute,
 			&stun.UnknownAttributes{stun.AttrDontFragment},
 			attr,
 		); sendErr != nil {
@@ -103,7 +103,7 @@ func (s *Server) handleAllocateRequest(conn net.PacketConn, srcAddr net.Addr, m 
 	}
 	respondWithError := func(err error, messageIntegrity stun.MessageIntegrity, errorCode stun.ErrorCode) error {
 		if sendErr := curriedSend(stun.ClassErrorResponse, stun.MethodAllocate, m.TransactionID,
-			&stun.ErrorCodeAttribute{Code: errorCode},
+			errorCode,
 			messageIntegrity,
 		); sendErr != nil {
 			err = errors.Errorf(strings.Join([]string{sendErr.Error(), err.Error()}, "\n"))
