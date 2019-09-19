@@ -275,7 +275,7 @@ func (s *Server) handleRefreshRequest(conn net.PacketConn, srcAddr net.Addr, m *
 	curriedSend := func(class stun.MessageClass, method stun.Method, transactionID [stun.TransactionIDSize]byte, attrs ...stun.Setter) error {
 		return s.sender(conn, srcAddr, s.makeAttrs(transactionID, stun.NewType(method, class), attrs...)...)
 	}
-	messageIntegrity, _, err := authenticateRequest(curriedSend, m, stun.MethodCreatePermission, s.realm, s.authHandler, srcAddr)
+	messageIntegrity, _, err := authenticateRequest(curriedSend, m, stun.MethodRefresh, s.realm, s.authHandler, srcAddr)
 	if err != nil {
 		return err
 	}
