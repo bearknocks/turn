@@ -8,8 +8,8 @@ import (
 
 	"github.com/pion/logging"
 	"github.com/pion/stun"
-	"github.com/pion/turn/internal/ipnet"
-	"github.com/pion/turn/internal/proto"
+	"github.com/bearknocks/turn/internal/ipnet"
+	"github.com/bearknocks/turn/internal/proto"
 	"github.com/pkg/errors"
 )
 

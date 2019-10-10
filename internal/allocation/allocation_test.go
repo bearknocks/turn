@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/pion/stun"
-	"github.com/pion/turn/internal/ipnet"
-	"github.com/pion/turn/internal/proto"
+	"github.com/bearknocks/turn/internal/ipnet"
+	"github.com/bearknocks/turn/internal/proto"
 	"github.com/stretchr/testify/assert"
 )
 
