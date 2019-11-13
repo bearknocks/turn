@@ -1,4 +1,4 @@
-module github.com/pion/turn
+module github.com/bearknocks/turn
 
 go 1.12
 

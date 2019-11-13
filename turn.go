@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pion/stun"
 	"github.com/bearknocks/turn/internal/allocation"
 	"github.com/bearknocks/turn/internal/ipnet"
 	"github.com/bearknocks/turn/internal/proto"
+	"github.com/pion/stun"
 	"github.com/pkg/errors"
 )
 
@@ -30,7 +30,7 @@ func authenticateRequest(curriedSend curriedSend, m *stun.Message, callingMethod
 		return stun.MessageIntegrity{}, "", err
 	}
 
-	handleNoAuth := func() (stun.MessageIntegrity, string, error){
+	handleNoAuth := func() (stun.MessageIntegrity, string, error) {
 		nonce, err := buildNonce()
 		if err != nil {
 			return stun.MessageIntegrity{}, "", err

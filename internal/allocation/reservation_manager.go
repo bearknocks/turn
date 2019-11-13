@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+const (
+	// TurnMinPort RFC 5766 : In all cases, the server SHOULD only allocate ports from the range   49152 - 65535
+	TurnMinPort = 49152
+)
+
 type reservation struct {
 	token string
 	port  int
@@ -54,19 +59,30 @@ func (m *ReservationManager) GetReservation(reservationToken string) (int, bool)
 
 // GetRandomEvenPort returns a random un-allocated udp4 port
 func GetRandomEvenPort() (int, error) {
-	listener, err := net.ListenPacket("udp4", "0.0.0.0:0")
-	if err != nil {
-		return 0, err
-	}
+	retry := 0
+	for retry < 5 {
+		listener, err := net.ListenPacket("udp4", "0.0.0.0:0")
+		if err != nil {
+			return 0, err
+		}
 
-	addr, ok := listener.LocalAddr().(*net.UDPAddr)
-	if !ok {
-		return 0, fmt.Errorf("failed to cast net.Addr to *net.UDPAddr")
-	} else if err := listener.Close(); err != nil {
-		return 0, err
-	} else if addr.Port%2 == 1 {
-		return GetRandomEvenPort()
-	}
+		addr, ok := listener.LocalAddr().(*net.UDPAddr)
 
-	return addr.Port, nil
+		// 不符合条件的重新分配
+		if ok && addr.Port < TurnMinPort {
+			listener.Close()
+			continue
+		}
+
+		if !ok {
+			return 0, fmt.Errorf("failed to cast net.Addr to *net.UDPAddr")
+		} else if err := listener.Close(); err != nil {
+			return 0, err
+		} else if addr.Port%2 == 1 {
+			return GetRandomEvenPort()
+		}
+
+		return addr.Port, nil
+	}
+	return 0, fmt.Errorf("failed to alloc new udp port")
 }
